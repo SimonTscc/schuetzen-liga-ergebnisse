@@ -299,13 +299,17 @@ function buildFooter() {
     h3.textContent = team.label;
     box.appendChild(h3);
 
-    for (const teil of TEILE) {
-      const p = document.createElement("p");
-      p.innerHTML = `${teil.label}: <strong data-role="footer-teil" data-team="${team.key}" data-teil="${teil.key}">0</strong>`;
-      box.appendChild(p);
+    // Teil-Aufschlüsselung nur bei mehreren Blöcken (sonst = Gesamt, doppelt)
+    if (TEILE.length > 1) {
+      for (const teil of TEILE) {
+        const p = document.createElement("p");
+        p.innerHTML = `${teil.label}: <strong data-role="footer-teil" data-team="${team.key}" data-teil="${teil.key}">0</strong>`;
+        box.appendChild(p);
+      }
     }
 
     const pg = document.createElement("p");
+    pg.className = "footer-team-gesamt";
     pg.innerHTML = `Gesamt: <strong data-role="footer-gesamt" data-team="${team.key}">0</strong>`;
     box.appendChild(pg);
 

@@ -34,9 +34,6 @@ body {
 .page-header {
   padding: 1rem 1rem 0.5rem;
   border-bottom: 1px solid #ddd;
-  position: sticky;
-  top: 0;
-  z-index: 20;
   background: #fff;
 }
 
@@ -577,6 +574,16 @@ body {
 .footer-match p {
   margin: 0.15rem 0;
   font-size: 0.88rem;
+}
+
+.footer-team-gesamt {
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.footer-team-gesamt strong {
+  font-size: 1.5rem;
 }
 
 .footer-heim strong {
