@@ -22,6 +22,9 @@ if (!DISZ) {
 const TEILE = DISZ ? DISZ.teile : [];
 const STAENDE = DISZ ? DISZ.schuetzenProTeam : 0;
 const DEZIMAL = !!(DISZ && DISZ.dezimal);
+// Luftdruck-Disziplinen behalten das gespiegelte Serien-Layout,
+// alle anderen (Feuerwaffen) das gestapelte Teil-Spalten-Layout.
+const LUFT = !!(DISZ && DISZ.kategorie && DISZ.kategorie.indexOf("Luftdruck") !== -1);
 const STORAGE_KEY = DISZ ? `liga:${DISZ.id}:v2` : "";
 const LISTE_KEY = DISZ ? `liga:${DISZ.id}:liste` : "";
 
@@ -218,6 +221,95 @@ function tabelleHtml() {
   );
 }
 
+// Teilsummen (pro Programmteil) statt Einzelserien – für das gestapelte Layout
+function standDatenTeile(teamKey, idx) {
+  const leer = { name: "", teilSummen: TEILE.map(() => 0), ges: 0 };
+  if (!results || !results.teams || !results.teams[teamKey]) return leer;
+  const stand = results.teams[teamKey][idx];
+  if (!stand) return leer;
+  const teilSummen = [];
+  let ges = 0;
+  for (const t of TEILE) {
+    const arr = Array.isArray(stand[t.key]) ? stand[t.key] : [];
+    let sum = 0;
+    for (const v of arr) if (typeof v === "number") sum += v;
+    teilSummen.push(sum);
+    ges += sum;
+  }
+  return { name: stand.name || "", teilSummen, ges };
+}
+
+// Gestapelte Team-Tabelle (Feuerwaffen-Bogen)
+function stackTeamHtml(teamKey) {
+  const best = besteIndizes(teamKey, WERTUNG_BESTE);
+  const mehr = TEILE.length > 1;
+  const metaKey = teamKey === "heim" ? "heimName" : "gastName";
+  const vereinsname = teamKey === "heim" ? meta.heimName : meta.gastName;
+  const teamLabel = teamKey === "heim" ? "Heimmannschaft" : "Gastmannschaft";
+
+  let head = '<tr><th class="mb-nr">Satz</th><th class="mb-name">Name</th>';
+  if (mehr) for (const t of TEILE) head += `<th>${esc(t.label)}</th>`;
+  head += '<th>Gesamt</th><th class="mb-wertcol">Mannschafts&shy;wertung</th></tr>';
+
+  let rows = "";
+  for (let i = 0; i < STAENDE; i++) {
+    const d = standDatenTeile(teamKey, i);
+    const teilCells = mehr
+      ? d.teilSummen.map((v) => `<td>${v ? formatSumme(v) : ""}</td>`).join("")
+      : "";
+    const wert = best.has(i) && d.ges ? formatSumme(d.ges) : "";
+    rows +=
+      "<tr>" +
+      `<td class="mb-nr">${i + 1}</td>` +
+      `<td class="mb-name">${esc(d.name)}</td>` +
+      teilCells +
+      `<td class="mb-ges">${d.ges ? formatSumme(d.ges) : ""}</td>` +
+      `<td class="mb-wert${best.has(i) ? " mb-count" : ""}">${wert}</td>` +
+      "</tr>";
+  }
+
+  const total = wertungTeamSumme(teamKey, best);
+  const teilLeer = mehr ? TEILE.map(() => "<td></td>").join("") : "";
+  const totrow =
+    '<tr class="mb-total"><td class="mb-nr"></td><td class="mb-name">Mannschaftswertung</td>' +
+    teilLeer +
+    '<td class="mb-ges"></td>' +
+    `<td class="mb-wert mb-count">${total ? formatSumme(total) : "0"}</td></tr>`;
+
+  return (
+    `<div class="mb-team-titel">${teamLabel}: ` +
+    `<input class="mb-inp" data-meta="${metaKey}" value="${esc(vereinsname)}" placeholder="Vereinsname"></div>` +
+    '<div class="mb-tablewrap"><table class="mb-table mb-table-stack"><thead>' +
+    head +
+    "</thead><tbody>" +
+    rows +
+    totrow +
+    "</tbody></table></div>"
+  );
+}
+
+function stackHtml() {
+  return (
+    stackTeamHtml("heim") +
+    stackTeamHtml("gast") +
+    `<div class="mb-legend">Mannschaftswertung = die besten ${WERTUNG_BESTE} Gesamtergebnisse je Mannschaft (automatisch); Summe unten.</div>`
+  );
+}
+
+// Wählt das Layout: Luft = gespiegelt (Serien), sonst gestapelt (Teilsummen)
+function koerperHtml() {
+  if (LUFT) {
+    return (
+      '<div class="mb-teams">' +
+      '<div class="mb-team"><span class="mb-team-nr">Mannschaft 1</span><strong>Vereinsname:</strong> <input class="mb-inp" data-meta="heimName" value="' + esc(meta.heimName) + '"></div>' +
+      '<div class="mb-team"><span class="mb-team-nr">Mannschaft 2</span><strong>Vereinsname:</strong> <input class="mb-inp" data-meta="gastName" value="' + esc(meta.gastName) + '"></div>' +
+      '</div>' +
+      tabelleHtml()
+    );
+  }
+  return stackHtml();
+}
+
 function sigBlockHtml(key, label) {
   return (
     '<div class="mb-sig">' +
@@ -249,12 +341,7 @@ function buildMeldebogen() {
       '</div>' +
     '</div>' +
 
-    '<div class="mb-teams">' +
-      '<div class="mb-team"><span class="mb-team-nr">Mannschaft 1</span><strong>Vereinsname:</strong> <input class="mb-inp" data-meta="heimName" value="' + esc(meta.heimName) + '"></div>' +
-      '<div class="mb-team"><span class="mb-team-nr">Mannschaft 2</span><strong>Vereinsname:</strong> <input class="mb-inp" data-meta="gastName" value="' + esc(meta.gastName) + '"></div>' +
-    '</div>' +
-
-    tabelleHtml() +
+    koerperHtml() +
 
     '<div class="mb-sigs">' +
       sigBlockHtml("heim", "Mannschaftsführer (Mannschaft 1)") +
