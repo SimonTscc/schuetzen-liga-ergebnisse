@@ -75,6 +75,7 @@ const el = {
   btnPrev: document.getElementById("btnPrevSchuss"),
   btnNext: document.getElementById("btnNextSchuss"),
   btnSpeichern: document.getElementById("btnSpeichern"),
+  btnListe: document.getElementById("btnListe"),
   btnExportCsv: document.getElementById("btnExportCsv"),
   btnLeeren: document.getElementById("btnLeeren"),
   gesamtSumme: null, // wird beim Footer-Aufbau gesetzt
@@ -742,6 +743,10 @@ function wireEvents() {
   el.btnNext.addEventListener("click", advance);
 
   el.btnSpeichern.addEventListener("click", () => save(true));
+  el.btnListe?.addEventListener("click", () => {
+    save();
+    location.href = "liste.html?d=" + encodeURIComponent(DISZ.id);
+  });
   el.btnExportCsv.addEventListener("click", exportCsv);
   el.btnLeeren.addEventListener("click", clearAll);
 

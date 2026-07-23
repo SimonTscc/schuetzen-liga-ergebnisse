@@ -705,3 +705,199 @@ body {
     font-size: 1.2rem;
   }
 }
+
+/* =========================================================================
+   Ergebnisliste / Meldebogen (WSV-Stil)
+   ========================================================================= */
+.liste-page {
+  background: #eee;
+  padding-bottom: 2rem;
+}
+
+.liste-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.liste-toolbar #btnDruck {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.liste-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.mb-sheet {
+  max-width: 1040px;
+  margin: 1rem auto;
+  padding: 0.9rem 1rem 1.2rem;
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  color: #111;
+  font-size: 0.85rem;
+}
+
+.mb-title {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.mb-subtitle {
+  text-align: center;
+  font-weight: 700;
+  margin: 0.15rem 0 0.6rem;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 0.5rem;
+}
+
+.mb-head3 {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  margin: 0.5rem 0;
+}
+
+.mb-head-left { display: flex; flex-direction: column; gap: 0.25rem; }
+.mb-head-right { text-align: right; display: flex; flex-direction: column; gap: 0.25rem; }
+.mb-disz { text-align: center; font-size: 1.15rem; font-weight: 700; align-self: center; }
+
+.mb-inp {
+  font: inherit;
+  color: #111;
+  border: none;
+  border-bottom: 1px solid #333;
+  background: transparent;
+  padding: 0.1rem 0.2rem;
+  min-width: 4rem;
+}
+.mb-inp-mid { text-align: center; min-width: 7rem; }
+.mb-head-right .mb-inp { min-width: 6rem; }
+
+.mb-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.7rem;
+}
+.mb-team {
+  border: 1px solid #333;
+  padding: 0.35rem 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.mb-team .mb-inp { flex: 1; min-width: 6rem; font-weight: 700; }
+.mb-team-nr { font-size: 0.72rem; color: #555; }
+
+.mb-tablewrap { overflow-x: auto; }
+.mb-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.mb-table th, .mb-table td {
+  border: 1px solid #333;
+  padding: 0.2rem 0.1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  height: 1.7rem;
+  overflow: hidden;
+}
+.mb-table th { background: #ededed; font-weight: 700; }
+.mb-table .mb-nr { width: 1.6rem; font-weight: 700; background: #f5f5f5; }
+.mb-table .mb-name { width: auto; text-align: left; padding-left: 0.35rem; }
+.mb-table .mb-ges { font-weight: 700; background: #f7f7f7; }
+.mb-table .mb-wert { background: #fffdf0; }
+.mb-table tr.mb-total td { background: #e6e6e6; font-weight: 700; }
+
+.mb-winp {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font: inherit;
+  padding: 0;
+}
+
+.mb-sigs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin: 1.4rem 0 0.6rem;
+}
+.mb-sig { text-align: center; }
+.mb-sig-canvas {
+  width: 100%;
+  height: 90px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #fff;
+  touch-action: none;
+  cursor: crosshair;
+  display: block;
+}
+.mb-sig-clear {
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+  color: #a33;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.mb-sig-line { border-top: 1px solid #111; margin: 0.15rem 0 0.25rem; }
+.mb-sig-name {
+  width: 100%;
+  border: none;
+  border-bottom: 1px dotted #bbb;
+  text-align: center;
+  font: inherit;
+  padding: 0.1rem 0;
+}
+.mb-sig-label { font-size: 0.72rem; color: #444; margin-top: 0.15rem; }
+
+.mb-bericht { margin-top: 0.9rem; }
+.mb-bericht label { display: block; font-size: 0.75rem; color: #444; margin-bottom: 0.2rem; }
+.mb-bericht textarea {
+  width: 100%;
+  border: 1px solid #333;
+  padding: 0.4rem;
+  font: inherit;
+  resize: vertical;
+}
+
+/* ---- Druck ---- */
+@media print {
+  @page { size: A4 landscape; margin: 8mm; }
+  body.liste-page { background: #fff; padding: 0; }
+  .liste-toolbar { display: none !important; }
+  .mb-sig-clear { display: none !important; }
+  .mb-sheet {
+    max-width: none;
+    margin: 0;
+    border: 2px solid #000;
+    font-size: 8.5pt;
+  }
+  .mb-tablewrap { overflow: visible; }
+  .mb-inp, .mb-winp, .mb-sig-name, .mb-bericht textarea { color: #000; }
+  .mb-sig-canvas { height: 70px; }
+}

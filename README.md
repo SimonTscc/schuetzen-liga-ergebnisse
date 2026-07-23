@@ -62,6 +62,7 @@ Alles steckt in **`disciplines.js`**, in der Liste `LISTE` (wird automatisch in 
 - Summen je Serie/Block, je Stand und je Mannschaft + Begegnung gesamt
 - **Auto-Speichern im Browser** (localStorage) – **je Disziplin getrennt**
 - CSV-Export für Excel/LibreOffice (mit BOM für Umlaute)
+- **Ergebnisliste / Meldebogen** (`liste.html?d=<id>`): offizieller WSV-Rundenwettkampf-Bogen aus den erfassten Werten — Serien-Spalten, Gesamt, Wertung, beide Mannschaften gespiegelt, **digitale Unterschriften** (Zeichnen mit Maus/Finger) der Mannschaftsführer und des Schießleiters, druckbar bzw. als PDF speicherbar über die Druckfunktion. Aufruf über den Button „Ergebnisliste" im Tracker.
 
 ## Hinweis
 
