@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Liga Ergebniserfassung</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <a class="back-link" href="index.html">‹ Disziplin wechseln</a>
+    <h1>Liga Ergebniserfassung</h1>
+    <p class="subtitle" id="subtitle">Disziplin</p>
+    <div class="meta-row">
+      <label>
+        Datum
+        <input type="date" id="datum">
+      </label>
+      <label>
+        Heimmannschaft
+        <input type="text" id="heimmannschaft" placeholder="Verein Heim" autocomplete="organization">
+      </label>
+      <label>
+        Gastmannschaft
+        <input type="text" id="gastmannschaft" placeholder="Verein Gast" autocomplete="organization">
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" id="btnSpeichern">Lokal speichern</button>
+      <button type="button" id="btnExportCsv">CSV exportieren</button>
+      <button type="button" id="btnLeeren">Alle Felder leeren</button>
+    </div>
+    <p id="status" class="status" aria-live="polite"></p>
+  </header>
+
+  <main class="teams-main" id="teamsMain"></main>
+
+  <footer class="page-footer" id="pageFooter"></footer>
+
+  <aside class="keypad" id="keypad" aria-label="Ziffernblock Ringe">
+    <div class="keypad-head">
+      <button type="button" class="keypad-nav" id="btnPrevSchuss" aria-label="Vorheriger Schuss">‹</button>
+      <div class="keypad-context" id="keypadContext">Schuss antippen</div>
+      <button type="button" class="keypad-nav" id="btnNextSchuss" aria-label="Nächster Schuss">›</button>
+    </div>
+    <div class="keypad-grid" id="keypadGrid"></div>
+    <div class="keypad-extra">
+      <button type="button" class="keypad-btn keypad-zero" data-value="0">0</button>
+      <button type="button" class="keypad-btn keypad-clear" data-action="clear">Löschen</button>
+    </div>
+  </aside>
+
+  <script src="disciplines.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

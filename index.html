@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Liga Ergebniserfassung – Disziplin wählen</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="select-page">
+  <header class="select-header">
+    <h1>Liga Ergebniserfassung</h1>
+    <p class="subtitle">Kreis Stuttgart · Disziplin auswählen</p>
+  </header>
+
+  <main class="select-main">
+    <input type="search" id="diszSuche" class="disz-suche" placeholder="Disziplin oder Nummer suchen…" aria-label="Disziplin suchen">
+    <div id="diszGruppen" aria-label="Disziplinen"></div>
+    <p class="disz-hint">
+      Ergebnisse werden je Disziplin getrennt im Browser gespeichert.
+    </p>
+  </main>
+
+  <script src="disciplines.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var container = document.getElementById("diszGruppen");
+      var suche = document.getElementById("diszSuche");
+      var reihenfolge = window.DISZIPLIN_REIHENFOLGE || Object.keys(window.DISZIPLINEN || {});
+
+      // Karte für eine Disziplin bauen
+      function karte(d) {
+        var schuss = d.teile.reduce(function (n, t) { return n + t.schuss; }, 0);
+        var a = document.createElement("a");
+        a.className = "disz-card";
+        a.href = "tracker.html?d=" + encodeURIComponent(d.id);
+        a.dataset.such = (d.nummer + " " + d.name).toLowerCase();
+        a.innerHTML =
+          '<span class="disz-nummer">' + d.nummer + '</span>' +
+          '<span class="disz-body">' +
+            '<span class="disz-name">' + d.name + '</span>' +
+            '<span class="disz-desc">' + d.beschreibung + '</span>' +
+            '<span class="disz-meta">' +
+              (d.schuetzenProTeam * 2) + ' Schützen · ' + schuss + ' Schuss je Stand' +
+            '</span>' +
+          '</span>' +
+          '<span class="disz-arrow" aria-hidden="true">›</span>';
+        return a;
+      }
+
+      // Nach Kategorie gruppieren (Reihenfolge beibehalten)
+      var gruppen = [];
+      var index = {};
+      reihenfolge.forEach(function (id) {
+        var d = window.DISZIPLINEN[id];
+        if (!d) return;
+        var kat = d.kategorie || "Weitere";
+        if (!(kat in index)) {
+          index[kat] = { kategorie: kat, items: [] };
+          gruppen.push(index[kat]);
+        }
+        index[kat].items.push(d);
+      });
+
+      gruppen.forEach(function (g) {
+        var sec = document.createElement("section");
+        sec.className = "disz-gruppe";
+        var h = document.createElement("h2");
+        h.className = "disz-gruppe-titel";
+        h.textContent = g.kategorie;
+        sec.appendChild(h);
+        var ul = document.createElement("ul");
+        ul.className = "disz-list";
+        g.items.forEach(function (d) {
+          var li = document.createElement("li");
+          li.appendChild(karte(d));
+          ul.appendChild(li);
+        });
+        sec.appendChild(ul);
+        container.appendChild(sec);
+      });
+
+      // Suche
+      suche.addEventListener("input", function () {
+        var q = suche.value.trim().toLowerCase();
+        document.querySelectorAll(".disz-card").forEach(function (card) {
+          card.parentElement.style.display =
+            !q || card.dataset.such.indexOf(q) !== -1 ? "" : "none";
+        });
+        // Leere Gruppen ausblenden
+        document.querySelectorAll(".disz-gruppe").forEach(function (sec) {
+          var sichtbar = sec.querySelector('.disz-list li:not([style*="none"])');
+          sec.style.display = sichtbar ? "" : "none";
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
