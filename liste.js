@@ -123,9 +123,36 @@ function saveMeta() {
 }
 
 // ---- Aufbau --------------------------------------------------------------
+// Wertung = beste N Einzelergebnisse je Mannschaft
+const WERTUNG_BESTE = 3;
+
+function besteIndizes(teamKey, anzahl) {
+  const arr = [];
+  for (let i = 0; i < STAENDE; i++) arr.push({ i, ges: standDaten(teamKey, i).ges });
+  arr.sort((a, b) => b.ges - a.ges);
+  const set = new Set();
+  let cnt = 0;
+  for (const e of arr) {
+    if (e.ges > 0 && cnt < anzahl) { set.add(e.i); cnt++; }
+  }
+  return set;
+}
+function wertungTeamSumme(teamKey, set) {
+  let s = 0;
+  for (const i of set) s += standDaten(teamKey, i).ges;
+  return s;
+}
+
 function tabelleHtml() {
   const nums = [];
   for (let i = 1; i <= N_SERIEN; i++) nums.push(i);
+
+  // Feste Spaltenbreiten über colgroup (Name wird nicht abgeschnitten)
+  let cols = '<col class="c-nr"><col class="c-name">';
+  cols += nums.map(() => '<col class="c-serie">').join("");
+  cols += '<col class="c-ges"><col class="c-wert"><col class="c-wert"><col class="c-ges">';
+  cols += nums.map(() => '<col class="c-serie">').join("");
+  cols += '<col class="c-name"><col class="c-nr">';
 
   const thead =
     "<tr>" +
@@ -137,18 +164,23 @@ function tabelleHtml() {
     '<th class="mb-name">Name</th><th class="mb-nr"></th>' +
     "</tr>";
 
+  const bestHeim = besteIndizes("heim", WERTUNG_BESTE);
+  const bestGast = besteIndizes("gast", WERTUNG_BESTE);
+
   let rows = "";
   for (let i = 0; i < STAENDE; i++) {
     const h = standDaten("heim", i);
     const g = standDaten("gast", i);
+    const hWert = bestHeim.has(i) ? formatSumme(h.ges) : "";
+    const gWert = bestGast.has(i) ? formatSumme(g.ges) : "";
     rows +=
       "<tr>" +
       `<td class="mb-nr">${i + 1}</td>` +
       `<td class="mb-name">${esc(h.name)}</td>` +
       h.serien.map((v) => `<td>${v ? formatSumme(v) : ""}</td>`).join("") +
       `<td class="mb-ges">${h.ges ? formatSumme(h.ges) : ""}</td>` +
-      `<td class="mb-wert"><input class="mb-winp" data-team="heim" data-idx="${i}" value="${esc(meta.wertung.heim[i] || "")}"></td>` +
-      `<td class="mb-wert"><input class="mb-winp" data-team="gast" data-idx="${i}" value="${esc(meta.wertung.gast[i] || "")}"></td>` +
+      `<td class="mb-wert${bestHeim.has(i) ? " mb-count" : ""}">${hWert}</td>` +
+      `<td class="mb-wert${bestGast.has(i) ? " mb-count" : ""}">${gWert}</td>` +
       `<td class="mb-ges">${g.ges ? formatSumme(g.ges) : ""}</td>` +
       g.serien.slice().reverse().map((v) => `<td>${v ? formatSumme(v) : ""}</td>`).join("") +
       `<td class="mb-name">${esc(g.name)}</td>` +
@@ -157,25 +189,32 @@ function tabelleHtml() {
   }
 
   const leerSerien = nums.map(() => "<td></td>").join("");
+  const hGes = teamGes("heim"), gGes = teamGes("gast");
+  const hWertT = wertungTeamSumme("heim", bestHeim);
+  const gWertT = wertungTeamSumme("gast", bestGast);
   const totrow =
     '<tr class="mb-total">' +
     '<td class="mb-nr"></td><td class="mb-name">Mannschaft</td>' +
     leerSerien +
-    `<td class="mb-ges" id="mb-tot-hg">${teamGes("heim") ? formatSumme(teamGes("heim")) : ""}</td>` +
-    '<td class="mb-wert" id="mb-tot-hw"></td>' +
-    '<td class="mb-wert" id="mb-tot-gw"></td>' +
-    `<td class="mb-ges" id="mb-tot-gg">${teamGes("gast") ? formatSumme(teamGes("gast")) : ""}</td>` +
+    `<td class="mb-ges">${hGes ? formatSumme(hGes) : ""}</td>` +
+    `<td class="mb-wert mb-count">${hWertT ? formatSumme(hWertT) : ""}</td>` +
+    `<td class="mb-wert mb-count">${gWertT ? formatSumme(gWertT) : ""}</td>` +
+    `<td class="mb-ges">${gGes ? formatSumme(gGes) : ""}</td>` +
     leerSerien +
     '<td class="mb-name"></td><td class="mb-nr"></td>' +
     "</tr>";
 
+  const minW = 2 * 1.7 + 2 * 9 + 2 * N_SERIEN * 2.2 + 2 * 3 + 2 * 4;
   return (
-    '<div class="mb-tablewrap"><table class="mb-table"><thead>' +
+    `<div class="mb-tablewrap"><table class="mb-table" style="min-width:${minW}rem"><colgroup>` +
+    cols +
+    "</colgroup><thead>" +
     thead +
     "</thead><tbody>" +
     rows +
     totrow +
-    "</tbody></table></div>"
+    "</tbody></table></div>" +
+    `<div class="mb-legend">Wertung = Ergebnis der besten ${WERTUNG_BESTE} Schützen je Mannschaft (automatisch); Mannschaftswertung = deren Summe.</div>`
   );
 }
 
@@ -231,9 +270,7 @@ function buildMeldebogen() {
     '</div>';
 
   wireMeta();
-  wireWertung();
   ["heim", "schiri", "gast"].forEach(initSignatur);
-  updateWertungTotals();
 }
 
 // ---- Verdrahtung ---------------------------------------------------------
@@ -245,32 +282,6 @@ function wireMeta() {
       saveMeta();
     });
   });
-}
-
-function wireWertung() {
-  document.querySelectorAll(".mb-winp").forEach((inp) => {
-    inp.addEventListener("input", () => {
-      meta.wertung[inp.dataset.team][Number(inp.dataset.idx)] = inp.value;
-      updateWertungTotals();
-      saveMeta();
-    });
-  });
-}
-
-function wertungTotal(teamKey) {
-  let sum = 0;
-  let hat = false;
-  for (const v of meta.wertung[teamKey]) {
-    const n = parseFloat(String(v).replace(",", "."));
-    if (!isNaN(n)) { sum += n; hat = true; }
-  }
-  return hat ? Math.round(sum * 10) / 10 : "";
-}
-function updateWertungTotals() {
-  const hw = document.getElementById("mb-tot-hw");
-  const gw = document.getElementById("mb-tot-gw");
-  if (hw) hw.textContent = String(wertungTotal("heim")).replace(".", ",");
-  if (gw) gw.textContent = String(wertungTotal("gast")).replace(".", ",");
 }
 
 // ---- Unterschriften-Pad --------------------------------------------------
